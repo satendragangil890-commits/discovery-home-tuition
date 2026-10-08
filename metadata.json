@@ -1,0 +1,6 @@
+{
+  "name": "Discovery Home Tuition - Orai",
+  "description": "Har Bacche Ke Liye Sahi Teacher, Har Ghar Tak. Premium 1-to-1 verified home tutors in Orai, UP for Nursery to Class 12 (CBSE, ICSE, UP Board). Free demo class & instant matching.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
