@@ -24,6 +24,30 @@ export function getWhatsAppRequirementUrl(details: {
   return getWhatsAppUrl(message);
 }
 
+export function getWhatsAppSubjectInquiryUrl(details: {
+  subject: string;
+  studentClass?: string;
+  board?: string;
+  area?: string;
+  parentName?: string;
+}): string {
+  let message = `Hello Discovery Home Tuition Orai,\nI am inquiring about a qualified home tutor for *${details.subject}* in Orai.`;
+  if (details.studentClass && details.studentClass !== 'Any Class') {
+    message += `\n• Class: ${details.studentClass}`;
+  }
+  if (details.board && details.board !== 'Any Board') {
+    message += `\n• Board: ${details.board}`;
+  }
+  if (details.area && !details.area.includes('All Areas')) {
+    message += `\n• Locality: ${details.area}, Orai`;
+  }
+  if (details.parentName) {
+    message += `\n• Parent Name: ${details.parentName}`;
+  }
+  message += `\nPlease share verified tutor profiles available for ${details.subject} and schedule a Free Demo Class.`;
+  return getWhatsAppUrl(message);
+}
+
 export function getWhatsAppDemoUrl(details: {
   studentName?: string;
   studentClass?: string;

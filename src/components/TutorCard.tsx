@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Tutor, MatchScoreResult } from '../types';
 import { getWhatsAppTutorConnectUrl } from '../utils/contact';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface TutorCardProps {
   tutor: Tutor;
@@ -52,21 +53,17 @@ export const TutorCard: React.FC<TutorCardProps> = ({
                 alt={tutor.name}
                 className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-slate-200 shadow-2xs"
               />
-              {tutor.isVerified && (
-                <div
-                  className="absolute -bottom-1.5 -right-1.5 bg-emerald-600 text-white p-0.5 rounded-full shadow-xs"
-                  title="Verified by Discovery Home Tuition"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-              )}
+              <div className="absolute -bottom-1 -right-1">
+                <VerifiedBadge tutor={tutor} variant="icon" size="sm" />
+              </div>
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-1">
                 <div>
-                  <h3 className="font-extrabold text-base text-blue-950 truncate flex items-center gap-1.5">
+                  <h3 className="font-extrabold text-base text-blue-950 truncate flex items-center gap-1.5 flex-wrap">
                     <span>{tutor.name}</span>
+                    <VerifiedBadge tutor={tutor} variant="badge" size="sm" />
                   </h3>
                   <p className="text-xs font-medium text-slate-600 truncate mt-0.5">
                     {tutor.qualification}
@@ -81,13 +78,13 @@ export const TutorCard: React.FC<TutorCardProps> = ({
                 </div>
               </div>
 
-              {/* Quiet unboxed metadata: Experience & Gender */}
+              {/* Quiet unboxed metadata: Experience, Gender & Verification */}
               <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
                 <span className="font-semibold text-slate-700">{tutor.experienceYears}+ Years Exp</span>
                 <span aria-hidden="true">·</span>
                 <span>{tutor.gender}</span>
                 <span aria-hidden="true">·</span>
-                <span className="text-emerald-700 font-medium">DHT Verified</span>
+                <VerifiedBadge tutor={tutor} variant="inline" size="sm" />
               </div>
             </div>
           </div>
@@ -137,6 +134,21 @@ export const TutorCard: React.FC<TutorCardProps> = ({
             <span className="truncate">
               Areas: {tutor.teachingAreas.slice(0, 3).join(', ')}
               {tutor.teachingAreas.length > 3 ? ` (+${tutor.teachingAreas.length - 3} more)` : ''}
+            </span>
+          </div>
+
+          {/* Weekly Demo Availability Snippet */}
+          <div className="mt-2.5 flex items-center justify-between text-[11px] bg-slate-50 border border-slate-200/80 rounded-lg px-2.5 py-1 text-slate-700">
+            <div className="flex items-center gap-1.5 font-medium truncate">
+              <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+              <span className="truncate">
+                {tutor.weeklySchedule
+                  ? `${tutor.weeklySchedule.filter((d) => d.isAvailable && d.demoSlotAvailable).length} Days Demo Free`
+                  : 'Mon - Sat Available'}
+              </span>
+            </div>
+            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 shrink-0">
+              Free Trial
             </span>
           </div>
 

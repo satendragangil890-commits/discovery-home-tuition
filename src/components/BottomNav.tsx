@@ -73,7 +73,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           }`}
         >
           <User className="w-4 h-4" />
-          <span className="text-[10px] mt-0.5 capitalize">{currentRole}</span>
+          <span className="text-[10px] mt-0.5 font-medium">Profile</span>
         </button>
       </div>
     </div>

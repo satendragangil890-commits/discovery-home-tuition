@@ -11,6 +11,7 @@ import {
 import { BUSINESS_CONFIG, ORAI_LOCALITIES } from '../data/masterData';
 import { getCallUrl, getWhatsAppUrl } from '../utils/contact';
 import { UserRole } from '../types';
+import { NewsletterSignup } from './NewsletterSignup';
 
 interface FooterProps {
   onOpenFindTutor: () => void;
@@ -30,6 +31,11 @@ export const Footer: React.FC<FooterProps> = ({
   return (
     <footer className="bg-slate-950 text-slate-300 pt-14 pb-24 sm:pb-14 border-t border-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Parent Education Tips & Tutor Updates Newsletter Signup */}
+        <div id="newsletter-signup">
+          <NewsletterSignup onSelectArea={onSelectArea} />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-slate-800">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
@@ -114,6 +120,18 @@ export const Footer: React.FC<FooterProps> = ({
                 </a>
               </li>
               <li>
+                <a
+                  href="#newsletter-signup"
+                  className="hover:text-amber-400 text-amber-400/90 transition flex items-center gap-1.5"
+                >
+                  <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Parent Newsletter & Tips</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 px-1.5 py-0.2 rounded">
+                    New
+                  </span>
+                </a>
+              </li>
+              <li>
                 <a href={getCallUrl()} className="hover:text-white transition">
                   Helpdesk Support
                 </a>
@@ -155,15 +173,6 @@ export const Footer: React.FC<FooterProps> = ({
                   Educator WhatsApp Desk
                 </a>
               </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={onOpenAdmin}
-                  className="text-orange-400 hover:text-orange-300 transition font-bold"
-                >
-                  Admin HQ Console
-                </button>
-              </li>
             </ul>
           </div>
 
@@ -173,7 +182,7 @@ export const Footer: React.FC<FooterProps> = ({
               Localities in Orai
             </h4>
             <div className="flex flex-wrap gap-1.5 text-[11px]">
-              {ORAI_LOCALITIES.slice(0, 10).map((loc) => (
+              {ORAI_LOCALITIES.filter((l) => l !== 'All Areas in Orai').slice(0, 20).map((loc) => (
                 <button
                   key={loc}
                   type="button"

@@ -19,6 +19,9 @@ import {
   Star,
   ChevronRight,
   TrendingUp,
+  Mail,
+  Trash2,
+  Send,
 } from 'lucide-react';
 import {
   Tutor,
@@ -29,6 +32,7 @@ import {
   LeadStatus,
   TutorStatus,
   DemoStatus,
+  NewsletterSubscription,
 } from '../types';
 import { StorageService } from '../services/storage';
 import { getCallUrl, getWhatsAppUrl } from '../utils/contact';
@@ -82,12 +86,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<
-    'leads' | 'tutors' | 'demos' | 'reviews' | 'notifications' | 'master'
+    'leads' | 'tutors' | 'demos' | 'reviews' | 'notifications' | 'master' | 'subscribers'
   >('leads');
 
   const [leadFilterStatus, setLeadFilterStatus] = useState<string>('All');
   const [tutorFilterStatus, setTutorFilterStatus] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [subscribers, setSubscribers] = useState<NewsletterSubscription[]>(() =>
+    StorageService.getNewsletterSubscriptions()
+  );
+  const [subscriberLocalityFilter, setSubscriberLocalityFilter] = useState('All');
 
   // Assign Tutor Modal State
   const [assigningLead, setAssigningLead] = useState<TuitionRequest | null>(null);
@@ -236,6 +244,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             { id: 'tutors', label: `Tutor Profiles (${tutors.length})` },
             { id: 'demos', label: `Demo Requests (${demoRequests.length})` },
             { id: 'reviews', label: `Reviews (${reviews.length})` },
+            { id: 'subscribers', label: `Newsletter (${subscribers.length})` },
             { id: 'notifications', label: 'Send Notifications' },
             { id: 'master', label: 'Master Data / Config' },
           ].map((tab) => (
@@ -274,8 +283,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </select>
               </div>
 
-              <div className="text-xs text-slate-500 font-medium">
-                Admin can directly WhatsApp or Call parent to discuss tutor match.
+              <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                <span className="text-emerald-700 font-bold">🔒 Admin Exclusive Access:</span>
+                <span>Parent phone numbers & WhatsApp links are private and hidden from all tutors.</span>
               </div>
             </div>
 
@@ -747,6 +757,170 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div>Boards: CBSE, ICSE, UP Board</div>
                 <div>Mode: 1-to-1 Home Tuition & Online</div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 7: NEWSLETTER SUBSCRIBERS */}
+        {activeTab === 'subscribers' && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-4 p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+              <div>
+                <h3 className="font-bold text-base text-blue-950 flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-blue-700" />
+                  <span>Orai Parent Newsletter Subscribers ({subscribers.length})</span>
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Parents receiving weekly education tips, study strategies, and new tutor alerts across Orai.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const emails = subscribers.map((s) => s.email).join(', ');
+                    navigator.clipboard.writeText(emails);
+                    alert(`Copied ${subscribers.length} parent email(s) to clipboard!`);
+                  }}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition"
+                >
+                  Copy All Emails
+                </button>
+              </div>
+            </div>
+
+            {/* Filter by locality & search */}
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="relative flex-1 w-full">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search by parent email, name, or locality..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:border-blue-700"
+                />
+              </div>
+
+              <div className="w-full sm:w-auto">
+                <select
+                  value={subscriberLocalityFilter}
+                  onChange={(e) => setSubscriberLocalityFilter(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none"
+                >
+                  <option value="All">All Localities</option>
+                  {Array.from(new Set(subscribers.map((s) => s.locality).filter(Boolean))).map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Subscribers Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold">
+                    <th className="py-2.5 px-3">Parent / Email</th>
+                    <th className="py-2.5 px-3">WhatsApp / Mobile</th>
+                    <th className="py-2.5 px-3">Locality in Orai</th>
+                    <th className="py-2.5 px-3">Student Class</th>
+                    <th className="py-2.5 px-3">Topics of Interest</th>
+                    <th className="py-2.5 px-3">Subscribed Date</th>
+                    <th className="py-2.5 px-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {subscribers
+                    .filter((s) => {
+                      const matchesLoc =
+                        subscriberLocalityFilter === 'All' || s.locality === subscriberLocalityFilter;
+                      const q = searchQuery.toLowerCase();
+                      const matchesQuery =
+                        !q ||
+                        s.email.toLowerCase().includes(q) ||
+                        (s.parentName && s.parentName.toLowerCase().includes(q)) ||
+                        (s.locality && s.locality.toLowerCase().includes(q));
+                      return matchesLoc && matchesQuery;
+                    })
+                    .map((sub) => (
+                      <tr key={sub.id} className="hover:bg-slate-50/80 transition">
+                        <td className="py-2.5 px-3">
+                          <div className="font-semibold text-slate-900">
+                            {sub.parentName || 'Parent'}
+                          </div>
+                          <div className="text-slate-500 font-mono text-[11px]">{sub.email}</div>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          {sub.phoneOrWhatsapp ? (
+                            <span className="text-emerald-700 font-medium font-mono text-[11px]">
+                              +91 {sub.phoneOrWhatsapp}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 italic">Email Only</span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span className="inline-flex items-center gap-1 text-slate-700 font-medium">
+                            <MapPin className="w-3 h-3 text-amber-500 shrink-0" />
+                            {sub.locality || 'Orai'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-600">
+                          {sub.studentClass || 'Not specified'}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="flex flex-wrap gap-1">
+                            {sub.topics.map((top, idx) => (
+                              <span
+                                key={idx}
+                                className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 text-[10px] font-medium border border-blue-200"
+                              >
+                                {top}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-400 whitespace-nowrap">
+                          {sub.subscribedAt}
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {sub.phoneOrWhatsapp && (
+                              <a
+                                href={getWhatsAppUrl(
+                                  `Hello ${sub.parentName || 'Parent'}, here is your weekly child education tip & tutor update from Discovery Home Tuition Orai.`
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition"
+                                title="Send WhatsApp Tip"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Remove ${sub.email} from newsletter subscribers?`)) {
+                                  StorageService.removeNewsletterSubscription(sub.id);
+                                  setSubscribers(StorageService.getNewsletterSubscriptions());
+                                }
+                              }}
+                              className="p-1 rounded bg-rose-50 text-rose-600 hover:bg-rose-100 transition"
+                              title="Delete Subscriber"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

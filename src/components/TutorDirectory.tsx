@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { TutorCard } from './TutorCard';
 import { QuickSearchFilter, FilterState } from './QuickSearchFilter';
 import { Tutor, MatchScoreResult } from '../types';
 import { calculateTutorMatch } from '../utils/matching';
+import { SEOService } from '../services/seo';
 import { Sparkles, ArrowUpDown } from 'lucide-react';
 
 interface TutorDirectoryProps {
@@ -32,6 +33,16 @@ export const TutorDirectory: React.FC<TutorDirectoryProps> = ({
   });
 
   const [sortBy, setSortBy] = useState<'match' | 'rating' | 'experience'>('match');
+
+  // Synchronize area if selected from top header
+  useEffect(() => {
+    if (initialFilters?.area !== undefined) {
+      setFilters((prev) => ({
+        ...prev,
+        area: initialFilters.area || '',
+      }));
+    }
+  }, [initialFilters?.area]);
 
   const handleReset = () => {
     setFilters({
@@ -136,6 +147,34 @@ export const TutorDirectory: React.FC<TutorDirectoryProps> = ({
 
     return withScores;
   }, [tutors, filters, sortBy]);
+
+  // Dynamically update document title & meta tags when search filters change
+  useEffect(() => {
+    const hasActiveSearch = Boolean(
+      filters.studentClass ||
+      filters.subject ||
+      filters.board ||
+      (filters.area && !filters.area.includes('All')) ||
+      filters.searchQuery
+    );
+
+    if (hasActiveSearch) {
+      SEOService.setSearchSEO({
+        studentClass: filters.studentClass,
+        subject: filters.subject,
+        board: filters.board,
+        area: filters.area,
+        count: processedTutors.length,
+      });
+    }
+  }, [
+    filters.studentClass,
+    filters.subject,
+    filters.board,
+    filters.area,
+    filters.searchQuery,
+    processedTutors.length,
+  ]);
 
   return (
     <section id="find-tutor-section" className="py-12 bg-slate-50 border-b border-slate-200">

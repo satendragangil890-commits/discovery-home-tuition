@@ -17,6 +17,8 @@ import {
 import { Tutor } from '../types';
 import { BUSINESS_CONFIG } from '../data/masterData';
 import { getWhatsAppTutorConnectUrl, getCallUrl } from '../utils/contact';
+import { VerifiedBadge } from './VerifiedBadge';
+import { TutorProficiencyRadar } from './TutorProficiencyRadar';
 
 interface TutorProfileModalProps {
   tutor: Tutor | null;
@@ -53,19 +55,15 @@ export const TutorProfileModal: React.FC<TutorProfileModalProps> = ({
                 alt={tutor.name}
                 className="w-20 h-20 rounded-2xl object-cover border-2 border-white/20 shadow-md"
               />
-              {tutor.isVerified && (
-                <div className="absolute -bottom-1 -right-1 bg-emerald-600 text-white p-1 rounded-full shadow-sm">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-              )}
+              <div className="absolute -bottom-1 -right-1">
+                <VerifiedBadge tutor={tutor} variant="icon" size="md" />
+              </div>
             </div>
 
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight">{tutor.name}</h2>
-                <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  Verified Tutor
-                </span>
+                <VerifiedBadge tutor={tutor} variant="seal" size="md" />
               </div>
               <p className="text-xs sm:text-sm text-blue-100 font-medium">
                 {tutor.qualification}
@@ -154,7 +152,10 @@ export const TutorProfileModal: React.FC<TutorProfileModalProps> = ({
             </div>
           </div>
 
-          {/* Teaching Areas & Availability */}
+          {/* Radar Chart: Subject & Class Level Proficiency Matrix */}
+          <TutorProficiencyRadar tutor={tutor} />
+
+          {/* Teaching Areas & Summary Availability */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
               <div className="text-xs font-bold text-slate-900 mb-1.5 flex items-center gap-1.5">
@@ -169,12 +170,152 @@ export const TutorProfileModal: React.FC<TutorProfileModalProps> = ({
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
               <div className="text-xs font-bold text-slate-900 mb-1.5 flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-indigo-600" />
-                <span>Available Hours & Days</span>
+                <span>Overall Routine & Preference</span>
               </div>
               <div className="text-xs text-slate-700 space-y-0.5">
                 <div>• {tutor.availableDays.join(', ')}</div>
                 <div>• {tutor.availableTimeSlots.join(', ')}</div>
               </div>
+            </div>
+          </div>
+
+          {/* Weekly Availability Schedule for Demo Classes */}
+          <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50/70 via-slate-50 to-indigo-50/50 border border-blue-200/90 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-blue-600 text-white shadow-2xs">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-blue-950 flex items-center gap-1.5">
+                    <span>Weekly Availability Schedule</span>
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full border border-emerald-300">
+                      Live Free Demo Slots
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-slate-600">
+                    Parents can check free slots and request a trial demo class on open days.
+                  </p>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="flex items-center gap-3 text-[11px] text-slate-600 self-start sm:self-auto pt-1 sm:pt-0">
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-200"></span>
+                  <span>Free for Demo</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                  <span>Unavailable</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Days Schedule Grid */}
+            <div className="space-y-2 mt-2">
+              {tutor.weeklySchedule && tutor.weeklySchedule.length > 0 ? (
+                tutor.weeklySchedule.map((sched) => (
+                  <div
+                    key={sched.day}
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-2.5 rounded-xl border text-xs transition ${
+                      sched.isAvailable
+                        ? sched.demoSlotAvailable
+                          ? 'bg-white border-emerald-200/90 hover:border-emerald-300 shadow-2xs'
+                          : 'bg-white/80 border-slate-200'
+                        : 'bg-slate-100/70 border-slate-200/70 opacity-70'
+                    }`}
+                  >
+                    {/* Day name & demo status pill */}
+                    <div className="flex items-center gap-2.5 min-w-[140px]">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          sched.isAvailable
+                            ? sched.demoSlotAvailable
+                              ? 'bg-emerald-500 ring-2 ring-emerald-200'
+                              : 'bg-blue-500'
+                            : 'bg-slate-300'
+                        }`}
+                      />
+                      <span className="font-bold text-slate-900 w-24">{sched.day}</span>
+                      {sched.isAvailable && sched.demoSlotAvailable && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                          <Sparkles className="w-2.5 h-2.5 text-emerald-600" />
+                          <span>Demo Free</span>
+                        </span>
+                      )}
+                      {!sched.isAvailable && (
+                        <span className="text-[10px] font-medium text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded">
+                          Off Day
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Time Slots & Note */}
+                    <div className="flex-1 mt-1.5 sm:mt-0 sm:px-3 text-slate-600 flex flex-wrap items-center gap-1.5">
+                      {sched.isAvailable ? (
+                        <>
+                          {sched.slots && sched.slots.length > 0 ? (
+                            sched.slots.map((slot) => (
+                              <span
+                                key={slot}
+                                className="inline-flex items-center gap-1 bg-slate-100 text-slate-800 font-medium px-2 py-0.5 rounded text-[11px] border border-slate-200/80"
+                              >
+                                <Clock className="w-3 h-3 text-indigo-600" />
+                                <span>{slot}</span>
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-slate-500 italic text-[11px]">Slots available on request</span>
+                          )}
+
+                          {sched.preferredDemoTime && (
+                            <span className="inline-flex items-center gap-1 bg-orange-50 text-orange-800 font-semibold px-2 py-0.5 rounded text-[11px] border border-orange-200">
+                              <span>Demo: {sched.preferredDemoTime}</span>
+                            </span>
+                          )}
+
+                          {sched.note && (
+                            <span className="text-[11px] text-slate-500 italic block sm:inline">
+                              ({sched.note})
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-slate-400 italic text-[11px]">
+                          {sched.note || 'No routine batches on this day'}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Quick Demo Action for this day */}
+                    {sched.isAvailable && sched.demoSlotAvailable && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onRequestDemo(tutor);
+                          onClose();
+                        }}
+                        className="mt-2 sm:mt-0 text-[11px] font-bold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition shrink-0 self-end sm:self-center flex items-center gap-1"
+                      >
+                        <span>Book for {sched.day}</span>
+                      </button>
+                    )}
+                  </div>
+                ))
+              ) : (
+                /* Fallback if schedule is still loading or plain text */
+                <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+                  <div className="font-semibold text-slate-800">
+                    Teaching Days: {tutor.availableDays.join(', ')}
+                  </div>
+                  <div>Available Slots: {tutor.availableTimeSlots.join(' • ')}</div>
+                  <div className="text-emerald-700 font-bold flex items-center gap-1 pt-1">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Free demo sessions can be scheduled anytime between Monday - Saturday!</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

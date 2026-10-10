@@ -1,10 +1,11 @@
-import { Tutor, TuitionRequest, DemoRequest, Review, AppNotification, UserRole } from '../types';
+import { Tutor, TuitionRequest, DemoRequest, Review, AppNotification, UserRole, NewsletterSubscription } from '../types';
 import {
   INITIAL_TUTORS,
   INITIAL_TUITION_REQUESTS,
   INITIAL_DEMO_REQUESTS,
   INITIAL_REVIEWS,
   INITIAL_NOTIFICATIONS,
+  INITIAL_NEWSLETTER_SUBSCRIBERS,
 } from '../data/mockSeed';
 
 const STORAGE_KEYS = {
@@ -16,6 +17,7 @@ const STORAGE_KEYS = {
   CURRENT_ROLE: 'dht_current_role_v1',
   CURRENT_USER_PHONE: 'dht_current_user_phone_v1',
   LANGUAGE: 'dht_app_language_v1',
+  NEWSLETTER_SUBSCRIPTIONS: 'dht_newsletter_subscriptions_v1',
 };
 
 function getLocal<T>(key: string, defaultValue: T): T {
@@ -43,6 +45,45 @@ export const StorageService = {
     if (!tutors || tutors.length === 0) {
       setLocal(STORAGE_KEYS.TUTORS, INITIAL_TUTORS);
       return INITIAL_TUTORS;
+    }
+    // Check if initial mock tutors need schedule backfill, updated teaching areas, or proficiency profiles
+    const needsBackfill = tutors.some((t) => !t.weeklySchedule);
+    const needsProficiencySync = tutors.some((t) => !t.proficiencyProfile);
+    const needsAreaSync = tutors.some((t) => {
+      const initialMatch = INITIAL_TUTORS.find((it) => it.id === t.id);
+      return initialMatch && initialMatch.teachingAreas.length !== t.teachingAreas.length;
+    });
+
+    if (needsBackfill || needsAreaSync || needsProficiencySync) {
+      const updated = tutors.map((t) => {
+        const initialMatch = INITIAL_TUTORS.find((it) => it.id === t.id);
+        const teachingAreas = initialMatch ? initialMatch.teachingAreas : t.teachingAreas;
+        const proficiencyProfile = t.proficiencyProfile || initialMatch?.proficiencyProfile;
+
+        if (t.weeklySchedule && t.weeklySchedule.length > 0) {
+          return { ...t, teachingAreas, proficiencyProfile };
+        }
+        if (initialMatch?.weeklySchedule) {
+          return { ...t, teachingAreas, weeklySchedule: initialMatch.weeklySchedule, proficiencyProfile };
+        }
+        // Generate sensible weekly availability fallback for custom registered tutors
+        return {
+          ...t,
+          teachingAreas,
+          proficiencyProfile,
+          weeklySchedule: [
+            { day: 'Monday' as const, isAvailable: true, slots: t.availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: t.availableTimeSlots[0] || '5:00 PM - 6:00 PM' },
+            { day: 'Tuesday' as const, isAvailable: true, slots: t.availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: t.availableTimeSlots[0] || '5:00 PM - 6:00 PM' },
+            { day: 'Wednesday' as const, isAvailable: true, slots: t.availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: t.availableTimeSlots[0] || '5:00 PM - 6:00 PM' },
+            { day: 'Thursday' as const, isAvailable: true, slots: t.availableTimeSlots, demoSlotAvailable: false },
+            { day: 'Friday' as const, isAvailable: true, slots: t.availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: t.availableTimeSlots[0] || '5:00 PM - 6:00 PM' },
+            { day: 'Saturday' as const, isAvailable: true, slots: t.availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: '4:00 PM - 5:00 PM' },
+            { day: 'Sunday' as const, isAvailable: false, slots: [], demoSlotAvailable: false, note: 'Weekend off' },
+          ],
+        };
+      });
+      setLocal(STORAGE_KEYS.TUTORS, updated);
+      return updated;
     }
     return tutors;
   },
@@ -243,10 +284,26 @@ export const StorageService = {
 
   // --- Role & Session Management ---
   getCurrentRole(): UserRole {
-    return getLocal<UserRole>(STORAGE_KEYS.CURRENT_ROLE, 'parent');
+    const role = getLocal<UserRole>(STORAGE_KEYS.CURRENT_ROLE, 'parent');
+    if (role === 'admin') {
+      const isAuth =
+        typeof sessionStorage !== 'undefined' &&
+        sessionStorage.getItem('dht_admin_auth') === 'true';
+      if (!isAuth) return 'parent';
+    }
+    return role;
   },
 
   setCurrentRole(role: UserRole): void {
+    if (role === 'admin') {
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('dht_admin_auth', 'true');
+      }
+    } else {
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('dht_admin_auth');
+      }
+    }
     setLocal(STORAGE_KEYS.CURRENT_ROLE, role);
   },
 
@@ -266,6 +323,79 @@ export const StorageService = {
     setLocal(STORAGE_KEYS.LANGUAGE, lang);
   },
 
+  // --- Newsletter Subscriptions ---
+  getNewsletterSubscriptions(): NewsletterSubscription[] {
+    const subs = getLocal<NewsletterSubscription[]>(STORAGE_KEYS.NEWSLETTER_SUBSCRIPTIONS, []);
+    if (!subs || subs.length === 0) {
+      setLocal(STORAGE_KEYS.NEWSLETTER_SUBSCRIPTIONS, INITIAL_NEWSLETTER_SUBSCRIBERS);
+      return INITIAL_NEWSLETTER_SUBSCRIBERS;
+    }
+    return subs;
+  },
+
+  addNewsletterSubscription(
+    data: Omit<NewsletterSubscription, 'id' | 'subscribedAt'>
+  ): { success: boolean; message: string; isNew: boolean; subscription: NewsletterSubscription } {
+    const subs = this.getNewsletterSubscriptions();
+    const normalizedEmail = data.email.trim().toLowerCase();
+    const existingIndex = subs.findIndex(
+      (s) => s.email.trim().toLowerCase() === normalizedEmail
+    );
+
+    if (existingIndex >= 0) {
+      const updated: NewsletterSubscription = {
+        ...subs[existingIndex],
+        parentName: data.parentName || subs[existingIndex].parentName,
+        phoneOrWhatsapp: data.phoneOrWhatsapp || subs[existingIndex].phoneOrWhatsapp,
+        locality: data.locality || subs[existingIndex].locality,
+        studentClass: data.studentClass || subs[existingIndex].studentClass,
+        topics: data.topics.length > 0 ? data.topics : subs[existingIndex].topics,
+      };
+      subs[existingIndex] = updated;
+      setLocal(STORAGE_KEYS.NEWSLETTER_SUBSCRIPTIONS, subs);
+      return {
+        success: true,
+        message: 'Your newsletter preferences have been updated!',
+        isNew: false,
+        subscription: updated,
+      };
+    }
+
+    const newSub: NewsletterSubscription = {
+      id: `sub-${Date.now()}`,
+      email: normalizedEmail,
+      parentName: data.parentName?.trim() || '',
+      phoneOrWhatsapp: data.phoneOrWhatsapp?.trim() || '',
+      locality: data.locality || 'All Areas in Orai',
+      studentClass: data.studentClass || '',
+      topics: data.topics.length > 0 ? data.topics : ['Child Education Tips', 'New Tutors in Orai'],
+      subscribedAt: new Date().toISOString().split('T')[0],
+    };
+
+    subs.unshift(newSub);
+    setLocal(STORAGE_KEYS.NEWSLETTER_SUBSCRIPTIONS, subs);
+
+    // Also trigger an admin/app notification
+    this.addNotification({
+      title: 'New Parent Newsletter Subscriber',
+      message: `${newSub.parentName || newSub.email} subscribed for education tips & tutor alerts (${newSub.locality}).`,
+      type: 'admin_message',
+      targetRole: 'admin',
+    });
+
+    return {
+      success: true,
+      message: 'Successfully subscribed to Orai Parent Education Tips & Tutor Alerts!',
+      isNew: true,
+      subscription: newSub,
+    };
+  },
+
+  removeNewsletterSubscription(id: string): void {
+    const subs = this.getNewsletterSubscriptions().filter((s) => s.id !== id);
+    setLocal(STORAGE_KEYS.NEWSLETTER_SUBSCRIPTIONS, subs);
+  },
+
   // Reset to initial demo state
   resetAll(): void {
     localStorage.removeItem(STORAGE_KEYS.TUTORS);
@@ -273,5 +403,6 @@ export const StorageService = {
     localStorage.removeItem(STORAGE_KEYS.DEMO_REQUESTS);
     localStorage.removeItem(STORAGE_KEYS.REVIEWS);
     localStorage.removeItem(STORAGE_KEYS.NOTIFICATIONS);
+    localStorage.removeItem(STORAGE_KEYS.NEWSLETTER_SUBSCRIPTIONS);
   },
 };

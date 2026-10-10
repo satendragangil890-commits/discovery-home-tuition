@@ -21,3 +21,103 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Animated Success Checkmark & Ripple for positive reinforcement */
+@keyframes checkmark-circle {
+  0% {
+    stroke-dashoffset: 166;
+    transform: rotate(-90deg);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes checkmark-check {
+  0% {
+    stroke-dashoffset: 48;
+    opacity: 0;
+  }
+  40% {
+    opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes success-pop {
+  0% {
+    transform: scale(0.65);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes ripple-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes sparkle-burst {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(90deg);
+    opacity: 0.9;
+  }
+}
+
+.animate-success-pop {
+  animation: success-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: checkmark-circle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  transform-origin: center;
+}
+
+.animate-checkmark-check {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: checkmark-check 0.45s 0.35s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.animate-ripple-ring {
+  animation: ripple-ring 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.animate-sparkle-burst {
+  animation: sparkle-burst 0.7s ease-out forwards;
+}

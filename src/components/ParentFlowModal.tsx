@@ -27,6 +27,7 @@ import { TuitionRequest, Tutor, MatchScoreResult } from '../types';
 import { StorageService } from '../services/storage';
 import { getRankedTutors } from '../utils/matching';
 import { getCallUrl, getWhatsAppRequirementUrl } from '../utils/contact';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface ParentFlowModalProps {
   isOpen: boolean;
@@ -665,8 +666,9 @@ export const ParentFlowModal: React.FC<ParentFlowModalProps> = ({
                             className="w-10 h-10 rounded-lg object-cover shrink-0 border border-slate-200"
                           />
                           <div className="min-w-0">
-                            <div className="font-bold text-xs text-slate-900 truncate flex items-center gap-1">
+                            <div className="font-bold text-xs text-slate-900 truncate flex items-center gap-1.5">
                               <span>{tutor.name}</span>
+                              <VerifiedBadge tutor={tutor} variant="icon" size="sm" />
                               <span className="text-[10px] text-emerald-700 bg-emerald-100 px-1 py-0.2 rounded font-semibold">
                                 {score}% Match
                               </span>

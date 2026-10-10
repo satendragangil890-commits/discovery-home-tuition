@@ -20,11 +20,17 @@ import { NotificationsModal } from './components/NotificationsModal';
 import { FloatingContactBar } from './components/FloatingContactBar';
 import { BottomNav } from './components/BottomNav';
 import { Footer } from './components/Footer';
+import { AdminLoginModal } from './components/AdminLoginModal';
+import { SkeletonLoader } from './components/SkeletonLoader';
 import { StorageService } from './services/storage';
+import { SEOService } from './services/seo';
 import { Tutor, TuitionRequest, DemoRequest, Review, AppNotification, UserRole } from './types';
 import { BUSINESS_CONFIG } from './data/masterData';
 
 export default function App() {
+  // App initialization state to prevent visual flicker or blank screen
+  const [isLoading, setIsLoading] = useState(true);
+
   // State from StorageService
   const [tutors, setTutors] = useState<Tutor[]>([]);
   const [tuitionRequests, setTuitionRequests] = useState<TuitionRequest[]>([]);
@@ -44,6 +50,7 @@ export default function App() {
   const [tutorProfileModalOpen, setTutorProfileModalOpen] = useState(false);
   const [selectedTutorForDemo, setSelectedTutorForDemo] = useState<Tutor | null>(null);
   const [prefilledDemoSubject, setPrefilledDemoSubject] = useState<string>('');
+  const [adminLoginModalOpen, setAdminLoginModalOpen] = useState(false);
 
   // Prefill criteria for Parent Flow wizard
   const [parentFlowPrefill, setParentFlowPrefill] = useState<{
@@ -68,6 +75,11 @@ export default function App() {
 
   useEffect(() => {
     refreshAllData();
+    // Smooth delay so fonts, styles, and local storage stabilize without flicker
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 280);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleRoleChange = (role: UserRole) => {
@@ -117,6 +129,50 @@ export default function App() {
       setProfileModalOpen(true);
     }
   };
+
+  // Dynamic SEO & Document Title Manager based on Active View
+  useEffect(() => {
+    if (currentRole === 'admin') {
+      SEOService.setAdminSEO();
+      return;
+    }
+
+    if (tutorProfileModalOpen && viewingTutor) {
+      SEOService.setTutorProfileSEO(viewingTutor);
+      return;
+    }
+
+    if (findTutorOpen) {
+      SEOService.setFindTutorSEO();
+      return;
+    }
+
+    if (demoModalOpen) {
+      SEOService.setFreeDemoSEO(prefilledDemoSubject);
+      return;
+    }
+
+    if (profileModalOpen) {
+      SEOService.setProfileSEO(currentRole);
+      return;
+    }
+
+    // Default Home / Locality SEO
+    SEOService.setHomeSEO(selectedArea);
+  }, [
+    currentRole,
+    tutorProfileModalOpen,
+    viewingTutor,
+    findTutorOpen,
+    demoModalOpen,
+    prefilledDemoSubject,
+    profileModalOpen,
+    selectedArea,
+  ]);
+
+  if (isLoading) {
+    return <SkeletonLoader />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-orange-100 selection:text-orange-950">
@@ -210,7 +266,7 @@ export default function App() {
           const el = document.getElementById('become-tutor-section');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
-        onOpenAdmin={() => handleRoleChange('admin')}
+        onOpenAdmin={() => setAdminLoginModalOpen(true)}
         onSelectArea={(area) => {
           setSelectedArea(area);
           const el = document.getElementById('find-tutor-section');
@@ -219,7 +275,10 @@ export default function App() {
       />
 
       {/* Floating Call & WhatsApp Desk */}
-      <FloatingContactBar onOpenDemo={() => handleOpenDemo()} />
+      <FloatingContactBar
+        onOpenDemo={() => handleOpenDemo()}
+        currentArea={selectedArea}
+      />
 
       {/* Mobile Bottom Navigation */}
       <BottomNav
@@ -286,6 +345,15 @@ export default function App() {
         onClose={() => setNotificationsOpen(false)}
         notifications={notifications}
         onRefresh={refreshAllData}
+      />
+
+      {/* Restricted Admin Login Modal */}
+      <AdminLoginModal
+        isOpen={adminLoginModalOpen}
+        onClose={() => setAdminLoginModalOpen(false)}
+        onSuccess={() => {
+          handleRoleChange('admin');
+        }}
       />
     </div>
   );

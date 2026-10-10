@@ -28,6 +28,24 @@ export type DemoStatus =
   | 'Confirmed'
   | 'Cancelled';
 
+export type DayOfWeek =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+export interface DayAvailability {
+  day: DayOfWeek;
+  isAvailable: boolean;
+  slots: string[]; // e.g. ['4:00 PM - 5:30 PM', '6:00 PM - 7:30 PM']
+  demoSlotAvailable?: boolean; // whether demo classes can be booked on this day
+  preferredDemoTime?: string; // e.g. '5:00 PM - 6:00 PM'
+  note?: string; // e.g. 'Home visits in Rajendra Nagar & Rath Road'
+}
+
 export interface Tutor {
   id: string;
   name: string;
@@ -44,6 +62,8 @@ export interface Tutor {
   tuitionModes: ('Home Tuition' | 'Online Tuition')[];
   availableDays: string[];
   availableTimeSlots: string[];
+  weeklySchedule?: DayAvailability[];
+  proficiencyProfile?: TutorProficiencyProfile;
   expectedMonthlyFee: number;
   bio: string;
   photoUrl: string;
@@ -53,6 +73,20 @@ export interface Tutor {
   status: TutorStatus;
   achievements?: string[];
   registeredAt: string;
+}
+
+export interface ProficiencyMetric {
+  subjectOrLevel: string;
+  proficiency: number; // 0 - 100
+  benchmark?: number; // e.g., 70
+  ratingLabel?: string; // 'Mastery' | 'Advanced' | 'Proficient'
+  highlight?: string;
+}
+
+export interface TutorProficiencyProfile {
+  subjects: ProficiencyMetric[];
+  classLevels: ProficiencyMetric[];
+  primaryFocus?: string;
 }
 
 export interface TuitionRequest {
@@ -127,4 +161,15 @@ export interface MatchScoreResult {
   tutor: Tutor;
   score: number;
   reasons: string[];
+}
+
+export interface NewsletterSubscription {
+  id: string;
+  email: string;
+  parentName?: string;
+  phoneOrWhatsapp?: string;
+  locality?: string;
+  studentClass?: string;
+  topics: string[];
+  subscribedAt: string;
 }

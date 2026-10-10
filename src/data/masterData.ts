@@ -73,13 +73,90 @@ export const ADDITIONAL_SERVICES = [
   { name: 'Competitive Exam Preparation', description: 'Navodaya, Sainik School, NTSE, Olympiad', icon: 'Trophy' },
 ];
 
+export interface OraiNeighborhood {
+  name: string;
+  pincode: string;
+  landmarks?: string;
+}
+
+export const ORAI_NEIGHBORHOODS: OraiNeighborhood[] = [
+  { name: 'Indra Nagar', pincode: '285001', landmarks: 'Civil Sector & Main Road' },
+  { name: 'Tulsi Nagar', pincode: '285001', landmarks: 'Near Konch Road' },
+  { name: 'Sushil Nagar', pincode: '285001', landmarks: 'Behind Railway Station' },
+  { name: 'Indra Colony', pincode: '285001', landmarks: 'Near Rath Road & Degree College' },
+  { name: 'Vivekanand Colony', pincode: '285001', landmarks: 'Near Station Road / Railway Crossing' },
+  { name: 'Officer Colony', pincode: '285001', landmarks: 'Collectorate & District Courts' },
+  { name: 'Patel Nagar', pincode: '285001', landmarks: 'Near Gwalior Road / Bypass' },
+  { name: 'Shanti Nagar', pincode: '285001', landmarks: 'Shanti Nagar Residential Sector' },
+  { name: 'Kuiya Road', pincode: '285001', landmarks: 'Kuiya Road Connecting Belt' },
+  { name: 'Gopalganj', pincode: '285001', landmarks: 'Gopalganj Central Market' },
+  { name: 'Ram Nagar', pincode: '285001', landmarks: 'Ram Nagar Colony, Central Orai' },
+  { name: 'Umrarkhera', pincode: '285002', landmarks: 'Umrarkhera School Hub & Outer Orai' },
+  { name: 'Mechanic Nagar', pincode: '285001', landmarks: 'Mechanic Nagar Auto & Workshop Belt' },
+  { name: 'Eklaspura', pincode: '285001', landmarks: 'Eklaspura Residential Belt' },
+  { name: 'Karmer Road', pincode: '285001', landmarks: 'Karmer Highway Link' },
+  { name: 'Baghaura', pincode: '285001', landmarks: 'Baghaura Chowk & Colony' },
+  { name: 'Churkhi Road', pincode: '285001', landmarks: 'Churkhi Road & Bypass Area' },
+  { name: 'Rajendra Nagar', pincode: '285001', landmarks: 'Water Tank, City Center' },
+  { name: 'Rath Road', pincode: '285001', landmarks: 'Rath Chauraha, Degree College' },
+  { name: 'Konch Road', pincode: '285001', landmarks: 'Konch Gate, Bypass Road' },
+  { name: 'Konch Bus Stand Area', pincode: '285001', landmarks: 'Bus Terminal' },
+  { name: 'Jail Road', pincode: '285001', landmarks: 'District Jail & Police Lines' },
+  { name: 'Shivaji Nagar', pincode: '285001', landmarks: 'Shivaji Chowk' },
+  { name: 'Station Road', pincode: '285001', landmarks: 'Railway Station Colony' },
+  { name: 'Kalpi Road', pincode: '285001', landmarks: 'Kalpi Highway Crossing' },
+  { name: 'Bajaria', pincode: '285001', landmarks: 'Old Market Central' },
+  { name: 'Ambedkar Chauraha', pincode: '285001', landmarks: 'Ambedkar Circle' },
+  { name: 'Indira Nagar', pincode: '285001', landmarks: 'Civil Sector' },
+  { name: 'Shastri Nagar', pincode: '285001', landmarks: 'Near Head Post Office' },
+  { name: 'Betwa Colony', pincode: '285001', landmarks: 'Officers Colony' },
+  { name: 'Civil Lines Orai', pincode: '285001', landmarks: 'Collectorate, Court' },
+  { name: 'Thana Kotwali Area', pincode: '285001', landmarks: 'Kotwali Old City' },
+  { name: 'Mandi Samiti Area', pincode: '285002', landmarks: 'Mandi Samiti & Outer Belt' },
+];
+
+export const ORAI_PINCODES = [
+  { code: '285001', label: '285001 (Central Orai)' },
+  { code: '285002', label: '285002 (Mandi Samiti / Umrarkhera / Outer Orai)' },
+];
+
+export function getNeighborhoodPincode(name: string): string {
+  const norm = name.toLowerCase().trim();
+  const found = ORAI_NEIGHBORHOODS.find(
+    (n) => n.name.toLowerCase() === norm ||
+      (norm.includes('indra') && n.name.toLowerCase().includes('indra'))
+  );
+  return found ? found.pincode : '285001';
+}
+
+export function getNeighborhoodsByPincode(pincode: string): string[] {
+  if (!pincode) return ORAI_NEIGHBORHOODS.map((n) => n.name);
+  return ORAI_NEIGHBORHOODS.filter((n) => n.pincode === pincode).map((n) => n.name);
+}
+
 export const ORAI_LOCALITIES = [
+  'Indra Nagar',
+  'Tulsi Nagar',
+  'Sushil Nagar',
+  'Indra Colony',
+  'Vivekanand Colony',
+  'Officer Colony',
+  'Patel Nagar',
+  'Shanti Nagar',
+  'Kuiya Road',
+  'Gopalganj',
+  'Ram Nagar',
+  'Umrarkhera',
+  'Mechanic Nagar',
+  'Eklaspura',
+  'Karmer Road',
+  'Baghaura',
+  'Churkhi Road',
   'Rajendra Nagar',
   'Rath Road',
   'Konch Road',
   'Konch Bus Stand Area',
   'Jail Road',
-  'Sushil Nagar',
   'Shivaji Nagar',
   'Station Road',
   'Kalpi Road',
@@ -88,9 +165,9 @@ export const ORAI_LOCALITIES = [
   'Indira Nagar',
   'Shastri Nagar',
   'Betwa Colony',
-  'Mandi Samiti Area',
-  'Thana Kotwali Area',
   'Civil Lines Orai',
+  'Thana Kotwali Area',
+  'Mandi Samiti Area',
   'All Areas in Orai',
 ];
 
@@ -119,3 +196,13 @@ export const QUALIFICATIONS_LIST = [
   'Ph.D / Research Scholar',
   'Graduate / Post Graduate',
 ];
+
+export const DAYS_OF_WEEK = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+] as const;

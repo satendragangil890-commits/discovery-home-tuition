@@ -23,6 +23,8 @@ import {
 import { DemoRequest, Tutor } from '../types';
 import { StorageService } from '../services/storage';
 import { getCallUrl, getWhatsAppDemoUrl } from '../utils/contact';
+import { VerifiedBadge } from './VerifiedBadge';
+import { SuccessCelebration } from './SuccessCelebration';
 
 interface FreeDemoModalProps {
   isOpen: boolean;
@@ -62,6 +64,25 @@ export const FreeDemoModal: React.FC<FreeDemoModalProps> = ({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedDemo, setSubmittedDemo] = useState<DemoRequest | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Sync state whenever selectedTutor or modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      if (selectedTutor) {
+        if (selectedTutor.classes?.[0]) setStudentClass(selectedTutor.classes[0]);
+        if (selectedTutor.boards?.[0]) setBoard(selectedTutor.boards[0]);
+        if (prefilledSubject) {
+          setSubject(prefilledSubject);
+        } else if (selectedTutor.subjects?.[0]) {
+          setSubject(selectedTutor.subjects[0]);
+        }
+        if (selectedTutor.teachingAreas?.[0]) setArea(selectedTutor.teachingAreas[0]);
+        if (selectedTutor.availableTimeSlots?.[0]) setPreferredTime(selectedTutor.availableTimeSlots[0]);
+      } else if (prefilledSubject) {
+        setSubject(prefilledSubject);
+      }
+    }
+  }, [isOpen, selectedTutor, prefilledSubject]);
 
   if (!isOpen) return null;
 
@@ -153,11 +174,9 @@ export const FreeDemoModal: React.FC<FreeDemoModalProps> = ({
                     className="w-11 h-11 rounded-lg object-cover border border-slate-200"
                   />
                   <div className="min-w-0">
-                    <div className="font-bold text-xs text-blue-950 flex items-center gap-1.5">
+                    <div className="font-bold text-xs text-blue-950 flex items-center gap-1.5 flex-wrap">
                       <span>{selectedTutor.name}</span>
-                      <span className="text-[10px] text-emerald-700 bg-emerald-100 px-1 rounded font-semibold">
-                        Verified
-                      </span>
+                      <VerifiedBadge tutor={selectedTutor} variant="badge" size="sm" />
                     </div>
                     <div className="text-[11px] text-slate-500">
                       {selectedTutor.qualification} · {selectedTutor.experienceYears} Yrs Exp
@@ -347,78 +366,14 @@ export const FreeDemoModal: React.FC<FreeDemoModalProps> = ({
               </div>
             </form>
           ) : (
-            /* Confirmation Screen */
-            <div className="text-center space-y-4 py-3">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle className="w-8 h-8" />
-              </div>
-
-              <div>
-                <h4 className="text-lg font-extrabold text-blue-950">
-                  Demo Request Confirmed!
-                </h4>
-                <p className="text-sm font-semibold text-emerald-800 mt-1">
-                  “Your Free Demo Request has been submitted successfully.”
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Reference: <span className="font-mono font-bold">{submittedDemo?.id}</span> • We will confirm the tutor’s exact time slot within 2 hours.
-                </p>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-left text-xs space-y-1">
-                <div>
-                  <span className="text-slate-500">Student:</span>{' '}
-                  <span className="font-bold text-slate-900">{submittedDemo?.studentName}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500">Class & Subject:</span>{' '}
-                  <span className="font-bold text-slate-900">
-                    {submittedDemo?.studentClass} ({submittedDemo?.board}) · {submittedDemo?.subject}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-500">Scheduled Date:</span>{' '}
-                  <span className="font-bold text-slate-900">{submittedDemo?.preferredDate}</span> ({submittedDemo?.preferredTime})
-                </div>
-                <div>
-                  <span className="text-slate-500">Location:</span>{' '}
-                  <span className="font-bold text-slate-900">{submittedDemo?.area}, Orai</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <a
-                  href={getCallUrl()}
-                  className="py-2.5 bg-blue-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>Call 7268961107</span>
-                </a>
-                <a
-                  href={getWhatsAppDemoUrl({
-                    studentName: submittedDemo?.studentName,
-                    studentClass: submittedDemo?.studentClass,
-                    subject: submittedDemo?.subject,
-                    area: submittedDemo?.area,
-                    preferredDate: submittedDemo?.preferredDate,
-                  })}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>WhatsApp Alert</span>
-                </a>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleReset}
-                className="text-xs font-bold text-slate-500 hover:text-slate-800 pt-2"
-              >
-                Done & Return to Homepage
-              </button>
-            </div>
+            /* Celebration Screen with Animated Checkmark & Confetti */
+            submittedDemo && (
+              <SuccessCelebration
+                demo={submittedDemo}
+                selectedTutor={selectedTutor}
+                onClose={handleReset}
+              />
+            )
           )}
         </div>
       </div>

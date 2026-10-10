@@ -118,6 +118,15 @@ export const BecomeTutorSection: React.FC<BecomeTutorSectionProps> = ({
       tuitionModes,
       availableDays,
       availableTimeSlots,
+      weeklySchedule: [
+        { day: 'Monday', isAvailable: true, slots: availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: availableTimeSlots[0] || '4:00 PM - 6:00 PM' },
+        { day: 'Tuesday', isAvailable: true, slots: availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: availableTimeSlots[0] || '4:00 PM - 6:00 PM' },
+        { day: 'Wednesday', isAvailable: true, slots: availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: availableTimeSlots[0] || '4:00 PM - 6:00 PM' },
+        { day: 'Thursday', isAvailable: true, slots: availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: availableTimeSlots[0] || '4:00 PM - 6:00 PM' },
+        { day: 'Friday', isAvailable: true, slots: availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: availableTimeSlots[0] || '4:00 PM - 6:00 PM' },
+        { day: 'Saturday', isAvailable: true, slots: availableTimeSlots, demoSlotAvailable: true, preferredDemoTime: availableTimeSlots[0] || '3:00 PM - 5:00 PM', note: 'Weekend demo slot' },
+        { day: 'Sunday', isAvailable: false, slots: [], demoSlotAvailable: false, note: 'Off' },
+      ],
       expectedMonthlyFee: Number(expectedMonthlyFee),
       bio:
         bio.trim() ||
@@ -438,7 +447,7 @@ export const BecomeTutorSection: React.FC<BecomeTutorSectionProps> = ({
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Teaching Areas in Orai (Where you can visit)
                     </label>
-                    <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1.5 bg-white rounded-lg border border-slate-200">
+                    <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-white rounded-lg border border-slate-200">
                       {ORAI_LOCALITIES.map((loc) => {
                         const isSelected = selectedAreas.includes(loc);
                         return (

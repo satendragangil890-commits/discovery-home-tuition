@@ -114,16 +114,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           </button>
         </div>
 
-        {/* Role Switcher Toolbar */}
+        {/* Role Switcher Toolbar (Parent & Tutor only) */}
         <div className="bg-slate-100 p-2 border-b border-slate-200 flex items-center justify-between px-4 shrink-0 text-xs">
           <span className="font-semibold text-slate-600">Switch Account Role:</span>
-          <div className="flex gap-1">
-            {(['parent', 'tutor', 'admin'] as UserRole[]).map((role) => (
+          <div className="flex gap-1.5">
+            {(['parent', 'tutor'] as UserRole[]).map((role) => (
               <button
                 key={role}
                 type="button"
                 onClick={() => onRoleChange(role)}
-                className={`px-3 py-1 rounded-md font-bold capitalize transition ${
+                className={`px-3.5 py-1 rounded-md font-bold capitalize transition ${
                   currentRole === role
                     ? 'bg-blue-900 text-white shadow-2xs'
                     : 'bg-white text-slate-700 hover:bg-slate-200'
@@ -132,6 +132,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 {role}
               </button>
             ))}
+            {currentRole === 'admin' && (
+              <span className="px-2.5 py-1 rounded-md font-bold text-[11px] bg-orange-600 text-white">
+                Admin Mode Active
+              </span>
+            )}
           </div>
         </div>
 
@@ -269,42 +274,44 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-2">
                   Assigned Student Enquiries for You
                 </h4>
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1.5">
-                  <div className="font-bold text-slate-900">Class 10 CBSE (Maths & Science)</div>
-                  <div className="text-slate-600">
-                    Parent: Sunil Gupta · 📍 Rajendra Nagar, Orai · Preferred: Evening 4-6 PM
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900">Class 10 CBSE (Maths & Science)</span>
+                    <span className="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded">
+                      Assigned Lead
+                    </span>
                   </div>
+                  <div className="text-slate-600">
+                    Student: Aarav · Parent: Sunil Gupta · 📍 Rajendra Nagar, Orai
+                  </div>
+                  <div className="text-slate-500 text-[11px]">
+                    Preferred Timing: Evening 4:00 PM - 6:00 PM (6 Days/Week)
+                  </div>
+
+                  {/* Strict Privacy Notice */}
+                  <div className="p-2.5 bg-amber-50/90 border border-amber-200/80 rounded-lg text-[11px] text-amber-900 flex items-start gap-1.5">
+                    <span>🔒</span>
+                    <span>
+                      <strong>Parent Contact Privacy Protected:</strong> Parent direct mobile number & WhatsApp are strictly restricted to DHT Admin. Contact our official coordinator to schedule this demo class.
+                    </span>
+                  </div>
+
                   <div className="pt-1 flex items-center gap-2">
                     <a
                       href={getCallUrl()}
-                      className="px-2.5 py-1 bg-blue-900 text-white rounded text-[11px] font-bold"
+                      className="flex-1 text-center py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition"
                     >
-                      Call Coordinator for Address
+                      Call DHT Helpline (7268961107)
                     </a>
                     <a
-                      href={getWhatsAppUrl('Hello DHT coordinator, please share exact student house address for Rajendra Nagar Class 10 demo.')}
+                      href={getWhatsAppUrl('Hello DHT coordinator, please schedule my demo class for Rajendra Nagar Class 10 student (Aarav).')}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-2.5 py-1 bg-emerald-600 text-white rounded text-[11px] font-bold"
+                      className="flex-1 text-center py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition"
                     >
-                      WhatsApp Details
+                      WhatsApp Coordinator
                     </a>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ADMIN CONSOLE VIEW SHORTCUT */}
-          {currentRole === 'admin' && (
-            <div className="space-y-3 text-xs">
-              <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl space-y-2">
-                <div className="font-bold text-orange-950 text-sm">Admin HQ Shortcuts</div>
-                <p className="text-slate-600">
-                  Switch to Admin mode on the main top header or below to access lead assignment and tutor approvals.
-                </p>
-                <div className="font-mono text-slate-700 bg-white p-2 rounded border border-orange-200">
-                  Coordinator Phone: +91 7268961107
                 </div>
               </div>
             </div>

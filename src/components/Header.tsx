@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
 
               {areaDropdownOpen && (
                 <div
-                  className="absolute left-0 mt-1 w-52 bg-white text-slate-900 rounded-lg shadow-xl border border-slate-200 py-1 z-50 max-h-60 overflow-y-auto text-xs"
+                  className="absolute left-0 mt-1 w-56 bg-white text-slate-900 rounded-lg shadow-xl border border-slate-200 py-1 z-50 max-h-72 overflow-y-auto text-xs divide-y divide-slate-50"
                   onClick={() => setAreaDropdownOpen(false)}
                 >
                   <div className="px-3 py-1 font-semibold text-slate-500 border-b border-slate-100">
@@ -213,14 +213,14 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
-          {/* Role Pill Switcher */}
+          {/* Role Pill Switcher (Parent and Tutor only) */}
           <div className="hidden sm:flex items-center bg-slate-100 p-0.5 rounded-lg text-xs font-semibold">
             <button
               type="button"
               onClick={() => onRoleChange('parent')}
               className={`px-2.5 py-1 rounded-md transition ${
                 currentRole === 'parent'
-                  ? 'bg-white text-blue-800 shadow-xs'
+                  ? 'bg-white text-blue-800 shadow-xs font-bold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -231,22 +231,11 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => onRoleChange('tutor')}
               className={`px-2.5 py-1 rounded-md transition ${
                 currentRole === 'tutor'
-                  ? 'bg-white text-indigo-800 shadow-xs'
+                  ? 'bg-white text-indigo-800 shadow-xs font-bold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Tutor
-            </button>
-            <button
-              type="button"
-              onClick={() => onRoleChange('admin')}
-              className={`px-2.5 py-1 rounded-md transition ${
-                currentRole === 'admin'
-                  ? 'bg-orange-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Admin
             </button>
           </div>
 
@@ -287,8 +276,8 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               Switch Role
             </span>
-            <div className="flex gap-1 text-xs">
-              {(['parent', 'tutor', 'admin'] as UserRole[]).map((r) => (
+            <div className="flex gap-1.5 text-xs">
+              {(['parent', 'tutor'] as UserRole[]).map((r) => (
                 <button
                   key={r}
                   type="button"
@@ -296,7 +285,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onRoleChange(r);
                     setMobileMenuOpen(false);
                   }}
-                  className={`px-2.5 py-1 rounded text-xs font-medium capitalize ${
+                  className={`px-3 py-1 rounded text-xs font-bold capitalize ${
                     currentRole === r
                       ? 'bg-blue-800 text-white'
                       : 'bg-slate-100 text-slate-700'
